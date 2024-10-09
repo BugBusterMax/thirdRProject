@@ -90,5 +90,9 @@ head(df_xy_imputed, 6)
 ```
 ## 1.2
 ```{r}
-
+library(readxl)
+folder_path <- "C:/Users/mzr/Documents/GitHub/thirdRProject/"
+file_name <- "HockeyLeague.xlsx"
+file_path <- paste(folder_path, file_name,sep = "")
+wins_data_frame <- read_excel(file_path, sheet = "Wins")
 ```
