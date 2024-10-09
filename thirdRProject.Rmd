@@ -1,0 +1,94 @@
+---
+title: "thirdRProject"
+author: "Zirui"
+date: "2024-10-09"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+## 1
+## 1.1
+## (Q1)
+```{r}
+library(purrr)
+impute_by_mean<-function(x){
+  mu<-mean(x,na.rm = TRUE)
+  impute_f<-function(z){
+    if(is.na(z)){
+      return(mu)
+    }else{
+      return(z)
+    }
+  }
+  return(map_dbl(x,impute_f))
+}
+data<-c(2,5,NA,7,NA,10)
+imputed_data<-impute_by_mean(data)
+print(imputed_data)
+```
+## (Q2)
+```{r}
+library(purrr)
+impute_by_median<-function(x){
+  med<-median(x,na.rm = TRUE)
+  impute_f<-function(z){
+    if(is.na(z)){
+      return(med)
+    }else{
+      return(z)
+    }
+  }
+  return(map_dbl(x,impute_f))
+}
+v<-c(1,2,NA,4)
+impute_by_median(v)
+```
+## (Q3)
+```{r}
+x<-seq(0,10,by = 0.1)
+y<-5*x+1
+df_xy<-data.frame(x=x,y=y)
+head(df_xy,5)
+```
+## (Q4)
+```{r}
+df_xy %>% mutate(z = map2_dbl(x, y, ~.x + .y)) %>% head(5)
+sometimes_missing <- function(index, value){
+  if(index %% 5 == 0){
+    return(NA)
+  }else{
+    return(value)
+  }
+}
+sometimes_missing(14, 25)
+sometimes_missing(15, 25)
+library(dplyr)
+library(purrr)
+x<-seq(0, 10, by = 0.1)
+df_xy_missing <- data.frame(x = x) %>% mutate(y = map2_dbl(row_number(), x, ~sometimes_missing(.x, 5 * .y + 1)))
+head(df_xy_missing, 10)
+```
+## (Q5)
+```{r}
+library(purrr)
+impute_by_median <- function(x){
+  med <- median(x, na.rm = TRUE)
+  impute_f <- function(z){
+    if(is.na(z)){
+      return(med)
+    }else{
+      return(z)
+    }
+  }
+  return(map_dbl(x, impute_f))
+}
+library(dplyr)
+df_xy_imputed <- df_xy_missing %>% mutate(y = impute_by_median(y))
+head(df_xy_imputed, 6)
+```
+## 1.2
+```{r}
+
+```
