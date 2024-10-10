@@ -488,6 +488,103 @@ head(df_xy_imputed, 6)</code></pre>
 </div>
 <div id="section-2" class="section level2">
 <h2>1.2</h2>
+<pre class="r"><code>library(readxl)
+folder_path &lt;- &quot;C:/Users/mzr/Documents/GitHub/thirdRProject/&quot;
+file_name &lt;- &quot;HockeyLeague.xlsx&quot;
+file_path &lt;- paste(folder_path, file_name,sep = &quot;&quot;)
+wins_data_frame &lt;- read_excel(file_path, sheet = &quot;Wins&quot;)</code></pre>
+<pre><code>## New names:
+## • `` -&gt; `...1`</code></pre>
+<pre class="r"><code>wins_data_frame %&gt;% select(1:5) %&gt;% head(3)</code></pre>
+<pre><code>## # A tibble: 3 × 5
+##   ...1   `1990`   `1991`   `1992`   `1993`  
+##   &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;   
+## 1 Ducks  30 of 50 11 of 50 30 of 50 12 of 50
+## 2 Eagles 24 of 50 12 of 50 37 of 50 14 of 50
+## 3 Hawks  20 of 50 22 of 50 33 of 50 11 of 50</code></pre>
+<pre class="r"><code>tidy_wins_data &lt;- wins_data_frame %&gt;% pivot_longer(cols = -1, names_to = &quot;season&quot;, values_to = &quot;results&quot;) %&gt;% separate(results, into = c(&quot;wins&quot;, &quot;total_games&quot;), sep = &quot; of &quot;, convert = TRUE)
+head(tidy_wins_data)</code></pre>
+<pre><code>## # A tibble: 6 × 4
+##   ...1  season  wins total_games
+##   &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;       &lt;int&gt;
+## 1 Ducks 1990      30          50
+## 2 Ducks 1991      11          50
+## 3 Ducks 1992      30          50
+## 4 Ducks 1993      12          50
+## 5 Ducks 1994      24          50
+## 6 Ducks 1995      13          50</code></pre>
+</div>
+<div id="q1-1" class="section level2">
+<h2>(Q1)</h2>
+<pre class="r"><code>wins_tidy &lt;- wins_data_frame %&gt;% rename(Team = ...1) %&gt;% pivot_longer(cols = -Team, names_to = &quot;Year&quot;, values_to = &quot;Results&quot;) %&gt;% separate(Results, into = c(&quot;Wins&quot;, &quot;Total&quot;), sep = &quot; of &quot;, convert = TRUE) %&gt;% mutate(Year = as.integer(Year))
+wins_tidy %&gt;% dim()</code></pre>
+<pre><code>## [1] 248   4</code></pre>
+<pre class="r"><code>wins_tidy %&gt;% head(5)</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Team   Year  Wins Total
+##   &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
+## 1 Ducks  1990    30    50
+## 2 Ducks  1991    11    50
+## 3 Ducks  1992    30    50
+## 4 Ducks  1993    12    50
+## 5 Ducks  1994    24    50</code></pre>
+</div>
+<div id="q2-1" class="section level2">
+<h2>(Q2)</h2>
+<pre class="r"><code>losses_data_frame &lt;- read_excel(file_path, sheet = &quot;Losses&quot;)</code></pre>
+<pre><code>## New names:
+## • `` -&gt; `...1`</code></pre>
+<pre class="r"><code>losses_tidy &lt;- losses_data_frame %&gt;% rename(Team = ...1) %&gt;% pivot_longer(cols = -Team, names_to = &quot;Year&quot;, values_to = &quot;Results&quot;) %&gt;% separate(Results, into = c(&quot;Losses&quot;, &quot;Total&quot;), sep = &quot; of &quot;, convert = TRUE) %&gt;% mutate(Year = as.integer(Year))
+losses_tidy %&gt;% head(5)</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Team   Year Losses Total
+##   &lt;chr&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt;
+## 1 Ducks  1990     20    50
+## 2 Ducks  1991     37    50
+## 3 Ducks  1992      1    50
+## 4 Ducks  1993     30    50
+## 5 Ducks  1994      7    50</code></pre>
+</div>
+<div id="q3-1" class="section level2">
+<h2>(Q3)</h2>
+<pre class="r"><code>hockey_df &lt;- wins_tidy %&gt;% inner_join(losses_tidy, by = c(&quot;Team&quot;, &quot;Year&quot;, &quot;Total&quot;)) %&gt;% mutate(
+    Draws = Total - Wins - Losses,
+    Wins_rt = Wins / Total,
+    Losses_rt = Losses / Total,
+    Draws_rt = Draws / Total
+  )
+hockey_df %&gt;% head(5)</code></pre>
+<pre><code>## # A tibble: 5 × 9
+##   Team   Year  Wins Total Losses Draws Wins_rt Losses_rt Draws_rt
+##   &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt;   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 Ducks  1990    30    50     20     0    0.6       0.4      0   
+## 2 Ducks  1991    11    50     37     2    0.22      0.74     0.04
+## 3 Ducks  1992    30    50      1    19    0.6       0.02     0.38
+## 4 Ducks  1993    12    50     30     8    0.24      0.6      0.16
+## 5 Ducks  1994    24    50      7    19    0.48      0.14     0.38</code></pre>
+</div>
+<div id="q4-1" class="section level2">
+<h2>(Q4)</h2>
+<pre class="r"><code>summary_df &lt;- hockey_df %&gt;% group_by(Team) %&gt;% summarize(
+    W_md = median(Wins_rt),
+    W_mn = mean(Wins_rt),
+    L_md = median(Losses_rt),
+    L_mn = mean(Losses_rt),
+    D_md = median(Draws_rt),
+    D_mn = mean(Draws_rt)
+  ) %&gt;% arrange(desc(W_md))
+summary_df %&gt;% head(8)</code></pre>
+<pre><code>## # A tibble: 8 × 7
+##   Team         W_md  W_mn  L_md  L_mn  D_md  D_mn
+##   &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Eagles      0.45  0.437 0.25  0.279 0.317 0.284
+## 2 Penguins    0.45  0.457 0.3   0.310 0.133 0.232
+## 3 Hawks       0.417 0.388 0.233 0.246 0.32  0.366
+## 4 Ducks       0.383 0.362 0.34  0.333 0.25  0.305
+## 5 Owls        0.32  0.333 0.3   0.33  0.383 0.337
+## 6 Ostriches   0.3   0.309 0.4   0.395 0.267 0.296
+## 7 Storks      0.3   0.284 0.22  0.283 0.48  0.433
+## 8 Kingfishers 0.233 0.245 0.34  0.360 0.4   0.395</code></pre>
 </div>
 
 
